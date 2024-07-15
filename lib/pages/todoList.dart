@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/pages/addTodo.dart';
-
+import 'package:todoapp/utils/colorSetting.dart';
+import 'package:provider/provider.dart';
+import 'package:todoapp/model/itemData.dart';
 class todoList extends StatefulWidget {
   const todoList({super.key});
 
@@ -9,33 +11,34 @@ class todoList extends StatefulWidget {
 }
 
 class _todoListState extends State<todoList> {
-  Map data = {
-    "test1": {"title": "test1", "description": "ABC1", "todoValue": true},
-    "test2": {"title": "test2", "description": "ABC2", "todoValue": false},
-    "test3": {"title": "test3", "description": "ABC3", "todoValue": false},
-  };
+ 
 
   @override
   void initState() {
     super.initState();
-    print("data長度${data.length}");
+    //  data2 = Provider.of<Item>(context);
+     print("data2${context.read<Item>().data}");
+    
   }
 
   @override
   Widget build(BuildContext context) {
+    final data = context.watch<Item>().data;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text('Todo APP'),
       ),
-      body: ListView.builder(
-        itemCount: data.length,
-        itemBuilder: (context, index) {
-          return _todoList(data)[index];
-        },
-      ),
+      body: ListView(
+        children: [
+          ...data.entries.map((e)=>
+            _todoListTile(e.value.title!, e.value.description!, e.value.todoValue!)
+          ) 
+        ],
+      )
+      ,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: todoAppColor().second,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
@@ -44,35 +47,43 @@ class _todoListState extends State<todoList> {
                 MaterialPageRoute(builder: (context) {
               return AddTodo();
             }));
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(result!=null ? result['title']:"Data Build"),
-            ));
-
-            setState(() {
-              if (result != null && result['title'] != '')
-                data[result["title"]] = {
-                  "title": result["title"],
-                  "description": result["description"],
-                  "todoValue": false,
+            // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            //   content: Text(result!=null ? result['title']:"Data Build"),
+            // ));
+             if (result != null && result['title'] != ''){final addValue = {"${result["title"]}":
+                Item(title:result["title"], description:result["description"], todoValue: false)
                 };
-            });
+          context.read<Item>().addData(addValue);
+          print(context.read<Item>().data);}
+              
+           
+
+            // setState(() {
+            //   if (result != null && result['title'] != '')
+            //     data[result["title"]] = {
+            //       "title": result["title"],
+            //       "description": result["description"],
+            //       "todoValue": false,
+            //     };
+            // });
           },
           child: Icon(Icons.add)),
     );
   }
 
-  List<Card> _todoList(Map data) => data.entries.map((e) {
-        return _todoListTile(
-            e.value['title'], e.value['description'], e.value['todoValue']);
-      }).toList();
+  
 
   Card _todoListTile(String title, String description, bool todoValue) => Card(
           child: ListTile(
         leading: Checkbox(
             onChanged: (bool? value) {
-              setState(() {
-                data[title]['todoValue'] = value;
-              });
+               final data = context.read<Item>().data;
+               data[title] = Item(title:title, description: description, todoValue:value);
+               context.read<Item>().addData(data);
+               print(context.read<Item>().data[title]!.todoValue);
+              // setState(() {
+              //   data[title]['todoValue'] = value;
+              // });
             },
             value: todoValue),
         title: Text(title),
@@ -80,9 +91,12 @@ class _todoListState extends State<todoList> {
         trailing: IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
-              setState(() {
-                data.remove(title);
-              });
+              final data = context.read<Item>().data;
+             
+              context.read<Item>().deleteData(title);
+              // setState(() {
+              //   data.remove(title);
+              // });
             }),
       ));
 }
