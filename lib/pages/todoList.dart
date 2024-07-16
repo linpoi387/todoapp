@@ -3,6 +3,7 @@ import 'package:todoapp/pages/addTodo.dart';
 import 'package:todoapp/utils/colorSetting.dart';
 import 'package:provider/provider.dart';
 import 'package:todoapp/model/itemData.dart';
+import 'package:todoapp/services/httpService.dart';
 class todoList extends StatefulWidget {
   const todoList({super.key});
 
@@ -13,16 +14,56 @@ class todoList extends StatefulWidget {
 class _todoListState extends State<todoList> {
  
 
-  @override
-  void initState() {
-    super.initState();
-    //  data2 = Provider.of<Item>(context);
-     print("data2${context.read<Item>().data}");
-    
+ @override
+void initState() {
+  super.initState();
+  
+  HttpService().getTodos().then((data) {
+    // 獲取資料後再進行後續操作
+    context.read<Item>().sendData(data);
+    print("Data received: $data");
+  }).catchError((error) {
+    // 處理錯誤
+    print("Error fetching data: $error");
+  });
+  print("29${context.read<Item>().data}");
+}
+
+void createTodo(Map result)async{
+  var service = HttpService();
+  try{
+    await service.postTodo({"title":result["title"], "description":result["description"], "todoValue": false});
   }
+  catch(e){
+    print(e);
+  }
+}
+
+void putTodo(Item data)async{
+  var service = HttpService();
+  try{
+    await service.updateTodo(data);
+  }
+  catch(e){
+    print(e);
+  }
+}
+
+void delTodo(String title)async{
+  var service = HttpService();
+  try{
+    await service.deleteTodo(title);
+  }
+  catch(e){
+    print(e);
+  }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
+    
     final data = context.watch<Item>().data;
     return Scaffold(
       appBar: AppBar(
@@ -54,7 +95,9 @@ class _todoListState extends State<todoList> {
                 Item(title:result["title"], description:result["description"], todoValue: false)
                 };
           context.read<Item>().addData(addValue);
-          print(context.read<Item>().data);}
+          createTodo(result);
+          
+          }
               
            
 
@@ -79,8 +122,9 @@ class _todoListState extends State<todoList> {
             onChanged: (bool? value) {
                final data = context.read<Item>().data;
                data[title] = Item(title:title, description: description, todoValue:value);
-               context.read<Item>().addData(data);
+               context.read<Item>().updateData(data);
                print(context.read<Item>().data[title]!.todoValue);
+               putTodo(data[title]!);
               // setState(() {
               //   data[title]['todoValue'] = value;
               // });
@@ -91,9 +135,9 @@ class _todoListState extends State<todoList> {
         trailing: IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
-              final data = context.read<Item>().data;
              
               context.read<Item>().deleteData(title);
+              delTodo(title);
               // setState(() {
               //   data.remove(title);
               // });

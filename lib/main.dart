@@ -21,8 +21,7 @@ class MainApp extends StatelessWidget {
         primaryColor: Colors.amber,
         colorScheme: ColorScheme.fromSeed(
       seedColor: Color.fromARGB(248, 250, 210, 6),
-      // brightness: Brightness.dark,
-      )),
+      brightness: Brightness.dark,)),
       home: todoList()
     );
   }
