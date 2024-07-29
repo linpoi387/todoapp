@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/pages/addTodo.dart';
+import 'package:todoapp/pages/apiKeyPage.dart';
 import 'package:todoapp/utils/colorSetting.dart';
 import 'package:provider/provider.dart';
 import 'package:todoapp/model/itemData.dart';
@@ -19,7 +20,7 @@ class _todoListState extends State<todoList>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController!.addListener(() {
       setState(() {});
     });
@@ -73,93 +74,94 @@ class _todoListState extends State<todoList>
 
   @override
   Widget build(BuildContext context) {
-   
     final data = context.watch<Item>().data;
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text('Todo APP'),
-          bottom: TabBar(
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text('Todo APP'),
+            bottom: TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(
+                  icon: Icon(Icons.key),
+                  text: "API Key",
+                ),
+                Tab(
+                  icon: Icon(Icons.computer),
+                  text: "AI",
+                ),
+                Tab(
+                  icon: Icon(Icons.book),
+                  text: "未完成",
+                ),
+                Tab(
+                  icon: Icon(Icons.bookmark),
+                  text: "已完成",
+                )
+              ],
+            ),
+          ),
+          body: TabBarView(
             controller: _tabController,
-            tabs: [
-              Tab(
-                icon: Icon(Icons.computer),
-                text: "AI",
+            children: [
+              Apikeypage(),
+              aiChatPage(),
+              ListView(
+                children: [
+                  ...data.entries.map((e) {
+                    print("102${_tabController!.index}");
+                    if (e.value.todoValue == false) {
+                      return _todoListTile(e.value.title!, e.value.description!,
+                          e.value.todoValue!);
+                    } else {
+                      return Card();
+                    }
+                  })
+                ],
               ),
-              Tab(
-                icon: Icon(Icons.book),
-                text: "未完成",
+              ListView(
+                children: [
+                  ...data.entries.map((e) {
+                    print("116${_tabController!.index}");
+                    if (e.value.todoValue == true) {
+                      return _todoListTile(e.value.title!, e.value.description!,
+                          e.value.todoValue!);
+                    } else {
+                      return Card();
+                    }
+                  })
+                ],
               ),
-              Tab(
-                icon: Icon(Icons.bookmark),
-                text: "已完成",
-              )
             ],
           ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-           aiChatPage(),
-            ListView(
-              children: [
-                ...data.entries.map((e) {
-                  print("102${_tabController!.index}");
-                  if (e.value.todoValue == false) {
-                    return _todoListTile(e.value.title!, e.value.description!,
-                        e.value.todoValue!);
-                  }
-                  else {
-                    return Card();
-                  }
-                })
-              ],
-            ),
-            ListView(
-              children: [
-                ...data.entries.map((e) {
-                  print("116${_tabController!.index}");
-                  if (e.value.todoValue == true) {
-                    return _todoListTile(e.value.title!, e.value.description!,
-                        e.value.todoValue!);
-                  }
-                  else {
-                    return Card();
-                  }
-                })
-              ],
-            ),
-          ],
-        ),
-        floatingActionButton: _tabController!.index == 1
-        ?FloatingActionButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            onPressed: () async {
-              final result = await Navigator.push(context,
-                  MaterialPageRoute(builder: (context) {
-                return AddTodo();
-              }));
-              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              //   content: Text(result!=null ? result['title']:"Data Build"),
-              // ));
-              if (result != null && result['title'] != '') {
-                final addValue = {
-                  "${result["title"]}": Item(
-                      title: result["title"],
-                      description: result["description"],
-                      todoValue: false)
-                };
-                context.read<Item>().addData(addValue);
-                createTodo(result);
-              }
-            },
-            child: Icon(Icons.add)): null
-      
-      ),
+          floatingActionButton: _tabController!.index == 2
+              ? FloatingActionButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  onPressed: () async {
+                    final result = await Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return AddTodo();
+                    }));
+                    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    //   content: Text(result!=null ? result['title']:"Data Build"),
+                    // ));
+                    if (result != null && result['title'] != '') {
+                      final addValue = {
+                        "${result["title"]}": Item(
+                            title: result["title"],
+                            description: result["description"],
+                            todoValue: false)
+                      };
+                      context.read<Item>().addData(addValue);
+                      createTodo(result);
+                    }
+                  },
+                  child: Icon(Icons.add))
+              : null),
     );
   }
 

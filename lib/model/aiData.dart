@@ -4,15 +4,32 @@ import 'package:todoapp/services/huggingService.dart';
 import 'package:todoapp/services/localAIService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class ChatItems extends ChangeNotifier {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   List<String> _chats = ["123"];
   List<String> get chats => _chats;
+  int _serviceSelected = 0;
+  int get serviceSelected => _serviceSelected;
   Future fetchChat() async {
     final SharedPreferences prefs = await _prefs;
-    _chats = prefs.getStringList('chats')?? [""];
-    // print("14$_chats");
+    _chats = prefs.getStringList('chats') ?? [''];
+    notifyListeners();
+  }
+  Future selectedService(int index)async{
+    _serviceSelected = index;
+   notifyListeners();
+  }
+  Future addGeminiKey(String apiKey) async {
+    print(apiKey.toString() == '' ? 'null' : apiKey.toString());
+    final SharedPreferences prefs = await _prefs;
+    await prefs.setString('geminiKey', apiKey.toString());
+    notifyListeners();
+  }
+
+    Future addHuggingKey(String apiKey) async {
+    print(apiKey.toString() == '' ? 'null' : apiKey.toString());
+    final SharedPreferences prefs = await _prefs;
+    await prefs.setString('huggingKey', apiKey.toString());
     notifyListeners();
   }
 

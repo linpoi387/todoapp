@@ -1,10 +1,9 @@
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:todoapp/services/serviceLibrary.dart';
 
 class LocalAIService {
   Future<String> sendRequest(String question) async {
-    var url = Uri.parse("http://localhost:1234/v1/chat/completions");
+    var url = Uri.parse("http://192.168.208.30:1234/v1/chat/completions");
     var headers = {
       'Content-Type': 'application/json',
     };
@@ -23,7 +22,7 @@ class LocalAIService {
     var response =
         await http.post(url, body: jsonEncode(textInput), headers: headers);
     if (response.statusCode == 200) {
-      print(response.body);
+      // print(response.body);
       result = jsonDecode(response.body)['choices'][0]['message']['content'];
     } else {
       throw Exception("Failed to add todo");
